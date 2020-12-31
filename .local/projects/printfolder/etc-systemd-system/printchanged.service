@@ -1,0 +1,10 @@
+[Unit]
+Description=Execute print job on pdfs
+
+[Service]
+Type=simple
+Restart=no
+ExecStart=/print/printall.sh
+
+[Install]
+WantedBy=multi-user.target

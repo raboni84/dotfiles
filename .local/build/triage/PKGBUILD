@@ -1,0 +1,27 @@
+pkgname=triage
+pkgver=r1.507aa3d
+pkgrel=1
+pkgdesc="Triage tool for offline aquisition of windows and linux images"
+arch=('i686' 'x86_64')
+license=('CCPL:cc-by-nc-sa-4.0')
+depends=('bash')
+provides=($pkgname)
+conflicts=($pkgname)
+source=("$pkgname::git://github.com/raboni84/triage.git"
+        "cc-by-nc-sa-4.0.txt")
+sha256sums=('SKIP'
+            'e66c269d4819aaab34b49ef5220c4ddab6756f21bb5180761a4eb8561f2b7bbd')
+
+pkgver(){
+  cd $pkgname
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd $pkgname
+  install -d "$pkgdir/usr/bin"
+  install -D -m755 "$srcdir/triage/triage" "${pkgdir}/usr/bin/triage"
+
+  install -D -m644 "$srcdir/cc-by-nc-sa-4.0.txt" \
+  "${pkgdir}/usr/share/licenses/${pkgname}/cc-by-nc-sa-4.0.txt"
+}

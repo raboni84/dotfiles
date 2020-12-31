@@ -1,0 +1,445 @@
+#!/usr/bin/env bash
+#
+# .local/bin/system_setup
+# This is part of the DOTFILES GitHub package
+#
+set -e
+set +x
+
+# reload .bashrc defaults
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+
+# define local functions
+function pacman_need() {
+  sudo pacman -S --needed --noconfirm --color=auto $@
+}
+
+# initialize user
+USER="$(id -un)"
+if [ "$EUID" -eq 0 ]; then
+  echo "Please don't run the script as root"
+  exit
+else
+  echo "Running as current user '$USER'"
+fi
+
+# prepare environment
+sudo pacman -Syy
+pacman_need git
+aur aic94xx-firmware wd719x-firmware
+pacman_need linux-lts linux-lts-headers linux-firmware nano base-devel dhcpcd sudo htop \
+            grub efibootmgr dosfstools os-prober mtools dialog bash-completion openssh lvm2
+sudo systemctl enable systemd-networkd systemd-resolved dhcpcd systemd-timesyncd sshd
+sudo cp ~/.bash_profile ~/.bashrc /root/
+sudo chmod 600 /root/.bash_profile /root/.bashrc
+
+# prepare dotfiles repository
+pushd ~/.dotfiles
+  git config user.name dotfiles
+  git config user.email dotfiles
+  git config status.showUntrackedFiles no
+popd
+
+# menu
+BACKTITLE="Arch Linux Configuration Script"
+function selection_menu() {
+    menu=$1
+    shift
+    dialog --clear \
+           --backtitle "$BACKTITLE" \
+           --menu "$menu" \
+           15 40 4 \
+           "$@" \
+           2>&1 >/dev/tty
+}
+function checklist_menu() {
+    menu=$1
+    shift
+    dialog --clear \
+           --separate-output \
+           --backtitle "$BACKTITLE" \
+           --checklist "$menu" \
+           15 40 4 \
+           "$@" \
+           2>&1 >/dev/tty
+}
+if [[ -f ~/.local/etc/setup.conf ]]; then
+  . ~/.local/etc/setup.conf
+  echo "Loaded values from config:"
+  case "$SYSBASE" in
+    cli) echo " - Client"
+    ;;
+    srv) echo " - Server"
+    ;;
+    vbox) echo " - VirtualBox"
+    ;;
+    vmware) echo " - VMWare"
+    ;;
+  esac
+  case "$OPTCPU" in
+    amd) echo " - AMD CPU"
+    ;;
+    intel) echo " - Intel CPU"
+    ;;
+  esac
+  for choice in $OPTGPU; do
+    case "$choice" in
+      nvidia) echo " - NVIDIA GPU"
+      ;;
+      amd) echo " - AMD GPU"
+      ;;
+      intel) echo " - Intel GPU"
+      ;;
+    esac
+  done
+else
+  OPTIONS=(cli "Client"
+           srv "Server"
+           vbox "VirtualBox"
+           vmware "VMWare")
+  SYSBASE=$(selection_menu "Choose system base:" "${OPTIONS[@]}")
+  OPTCPU=
+  OPTGPU=
+  case "$SYSBASE" in
+    cli|srv)
+      OPTIONS=(amd "AMD"
+               intel "Intel")
+      OPTCPU=$(selection_menu "Choose installed CPU:" "${OPTIONS[@]}")
+      OPTIONS=(nvidia "NVIDIA" off
+               amd "AMD" off
+               intel "Intel" off)
+      OPTGPU=$(checklist_menu "Choose installed GPU(s):" "${OPTIONS[@]}")
+    ;;
+  esac
+  OPTIONS=(wifi "Wireless Network" off
+           bt "Bluetooth" off
+           xrdp "Remote Desktop Server" on
+           wiki "Arch Wiki Offline" on
+           devenv "Devel Env" off
+           hybrid "Hybrid sleep" off
+           wine "Wine" off
+           renv "Reverse Engineering" off)
+  OPTDRI=$(checklist_menu "Choose additional stuff:" "${OPTIONS[@]}")
+  mkdir -p ~/.local/etc
+  echo -en "SYSBASE=\"$SYSBASE\"\nOPTCPU=\"$OPTCPU\"\nOPTGPU=\"$OPTGPU\"\nOPTDRI=\"$OPTDRI\"\n" > ~/.local/etc/setup.conf
+fi
+
+# cpu and gpu
+case "$OPTCPU" in
+    amd) pacman_need amd-ucode
+    ;;
+    intel) pacman_need intel-ucode
+    ;;
+esac
+for choice in $OPTGPU; do
+  case $choice in
+    nvidia) pacman_need nvidia-lts nvidia-utils nvtop
+    ;;
+    amd)
+      pacman_need xf86-video-ati xf86-video-amdgpu vulkan-radeon libva-mesa-driver libva-vdpau-driver libva-utils
+      aur radeontop
+    ;;
+    intel) pacman_need xf86-video-intel vulkan-intel libva-intel-driver libva-utils
+    ;;
+  esac
+done
+
+# bugfix for st/libxft crashing when displaying emojis
+aur libxft-bgra-git
+
+# sound
+sudo rmmod pcspkr || true
+echo "blacklist pcspkr" | sudo tee /etc/modprobe.d/nobeep.conf
+pacman_need pulseaudio pulseaudio-alsa pulseaudio-bluetooth pamixer pavucontrol
+systemctl --user enable pulseaudio.{service,socket}
+
+# wireless network driver and bluetooth
+for choice in $OPTDRI; do
+  case $choice in
+    wifi)
+      pacman_need iwd iw
+      sudo systemctl enable iwd
+    ;;
+    bt)
+      pacman_need bluez bluez-utils
+      sudo systemctl enable bluetooth
+      sudo patch --forward --strip=1 /etc/bluetooth/main.conf "$HOME/.local/build/bluetooth.autoenable.patch" || true
+    ;;
+  esac
+done
+
+# virtual environment
+case "$SYSBASE" in
+  vbox)
+    pacman_need amd-ucode intel-ucode virtualbox-guest-utils virtualbox-guest-dkms xf86-video-vmware
+    sudo systemctl enable vboxservice
+    sudo usermod --append --groups vboxsf $USER
+  ;;
+  vmware)
+    pacman_need amd-ucode intel-ucode open-vm-tools xf86-video-vmware
+    sudo systemctl enable vmtoolsd vmware-vmblock-fuse
+  ;;
+esac
+
+# window manager
+pacman_need xorg-server xorg-xinit xorg-xrandr xautolock slock rofi awesome archlinux-xdg-menu \
+            libinput xf86-input-libinput xorg-xinput \
+            archlinux-wallpaper papirus-icon-theme flameshot \
+            ttf-dejavu ttf-liberation ttf-font-awesome ttf-hanazono ttf-hannom ttf-baekmuk
+aur otf-openmoji
+pushd ~/.local/build/st && ./install.sh && popd
+sudo tee /etc/systemd/system/suspend@.service <<EOF
+[Unit]
+Description=User suspend actions
+Before=sleep.target
+
+[Service]
+User=%I
+Type=forking
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xautolock -locknow
+ExecStartPost=/usr/bin/sleep 1
+
+[Install]
+WantedBy=sleep.target
+EOF
+sudo systemctl enable suspend@$USER.service
+case "$SYSBASE" in
+  cli|srv)
+    aur redshift-minimal
+    # Touchpad enable tapping and edge scrolling
+    sudo tee /usr/share/X11/xorg.conf.d/30-touchpad.conf <<EOF
+Section "InputClass"
+    Identifier "touchpad"
+    Driver "libinput"
+    MatchIsTouchpad "on"
+    Option "Tapping" "on"
+    Option "ScrollMethod" "edge"
+EndSection
+EOF
+  ;;
+esac
+
+# https://github.com/stove-panini/fontconfig-emoji
+# https://aur.archlinux.org/cgit/aur.git/tree/75-twemoji.conf?h=ttf-twemoji
+sudo tee /etc/fonts/conf.d/69-emoji.conf <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <alias binding="weak">
+    <family>sans-serif</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <alias binding="weak">
+    <family>serif</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <alias binding="weak">
+    <family>monospace</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <alias binding="weak">
+    <family>DejaVu Sans</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <alias binding="weak">
+    <family>DejaVu Serif</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <alias binding="weak">
+    <family>DejaVu Sans Mono</family>
+    <prefer>
+      <family>OpenMoji</family>
+    </prefer>
+  </alias>
+  <match target="scan">
+    <test name="family" compare="not_contains">
+      <string>Font Awesome</string>
+    </test>
+    <edit name="charset" mode="assign">
+      <minus>
+        <name>charset</name>
+        <charset>
+          <range>
+            <int>0xe000</int>
+            <int>0xf8ff</int>
+          </range>
+        </charset>
+      </minus>
+    </edit>
+  </match>
+</fontconfig>
+EOF
+sudo tee /etc/fonts/conf.d/70-no-mozilla-emoji.conf <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <selectfont>
+    <rejectfont>
+      <pattern>
+        <patelt name="family">
+          <string>EmojiOne Mozilla</string>
+        </patelt>
+      </pattern>
+      <pattern>
+        <patelt name="family">
+          <string>Twemoji Mozilla</string>
+        </patelt>
+      </pattern>
+    </rejectfont>
+  </selectfont>
+</fontconfig>
+EOF
+sudo tee /etc/fonts/conf.d/70-no-openmoji-black.conf <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <selectfont>
+    <rejectfont>
+      <pattern>
+        <patelt name="family">
+          <string>OpenMoji</string>
+        </patelt>
+        <patelt name="style">
+          <string>Black</string>
+        </patelt>
+      </pattern>
+    </rejectfont>
+  </selectfont>
+</fontconfig>
+EOF
+
+# file manager
+pacman_need pcmanfm gvfs gvfs-smb sshfs cifs-utils p7zip rsync
+aur p7zip-gui
+
+# remote desktop server
+for choice in $OPTDRI; do
+  case $choice in
+    xrdp)
+      aur xrdp
+      sudo patch --forward --strip=1 /etc/xrdp/startwm.sh "$HOME/.local/build/xrdp.xinitrc.patch" || true
+      sudo patch --forward --strip=1 /etc/xrdp/xrdp.ini "$HOME/.local/build/xrdp.conntypes.patch" || true
+      sudo systemctl enable xrdp xrdp-sesman
+    ;;
+  esac
+done
+
+# nice programs
+pacman_need gitg firefox xkcdpass pv
+pushd ~/.local/build/firefox-adguard && ./install.sh && popd
+pushd ~/.local/build/firefox-singlefile && ./install.sh && popd
+case "$SYSBASE" in
+  srv) ;;
+  *)
+    pacman_need libreoffice-fresh torbrowser-launcher nomacs krita vlc \
+                freerdp notepadqq
+    aur ttf-ms-fonts
+  ;;
+esac
+aur dotnet-core-bin dotnet-core-3.1
+
+# https[://]support[.]mozilla[.]org/en-US/kb/customizing-firefox-using-autoconfig
+sudo tee /usr/lib/firefox/defaults/pref/autoconfig.js <<EOF
+pref("general.config.filename", "firefox.cfg");
+pref("general.config.obscure_value", 0);
+EOF
+sudo chmod 0644 /usr/lib/firefox/defaults/pref/autoconfig.js
+sudo tee /usr/lib/firefox/firefox.cfg <<EOF
+// IMPORTANT: Start your code on the 2nd line
+
+lockPref("browser.preferences.defaultPerformanceSettings.enabled", false);
+lockPref("layers.acceleration.force-enabled", true);
+lockPref("layers.offmainthreadcomposition.enabled", true);
+lockPref("gfx.webrender.all", true);
+lockPref("media.hardware-video-decoding.force-enabled", true);
+lockPref("browser.sessionstore.warnOnQuit", false);
+lockPref("browser.startup.page", 3);
+lockPref("widget.disable-workspace-management", true);
+lockPref("pref.privacy.disable_button.view_passwords", true);
+lockPref("pref.privacy.disable_button.view_passwords_exceptions", true);
+EOF
+sudo chmod 0644 /usr/lib/firefox/firefox.cfg
+
+# development environment
+for choice in $OPTDRI; do
+  case $choice in
+    devenv)
+      pacman_need python python-pip gdb
+      aur visual-studio-code-bin
+      code --install-extension ms-dotnettools.csharp --force
+      code --install-extension ms-vscode.cpptools --force
+      code --install-extension ms-python.python --force
+      code --install-extension yinfei.luahelper --force
+      code --install-extension dotjoshjohnson.xml --force
+      code --install-extension aaron-bond.better-comments --force
+      dotnet tool install --global PowerShell --version 6.2.7 || true
+    ;;
+  esac
+done
+
+# the whole arch wiki at your fingertips (search with wiki-search)
+for choice in $OPTDRI; do
+  case $choice in
+    wiki) pacman_need arch-wiki-docs arch-wiki-lite
+    ;;
+  esac
+done
+
+# hybrid sleep for all relevant sleep modes
+for choice in $OPTDRI; do
+  case $choice in
+    hybrid)
+      sudo patch --forward --strip=1 /etc/systemd/sleep.conf "$HOME/.local/build/sleep.hybrid.patch" || true
+      sudo systemctl kill -s HUP systemd-logind
+    ;;
+  esac
+done
+
+# wine is not an emulator
+for choice in $OPTDRI; do
+  case $choice in
+    wine)
+      sudo patch --forward --strip=1 /etc/pacman.conf "$HOME/.local/build/pacman.multilib.patch" || true
+      sudo pacman -Syy
+      pacman_need wine-staging wine-gecko wine-mono
+      wineboot -u
+      pushd ~/.local/build/wine-dotnet && ./install.sh && popd
+    ;;
+  esac
+done
+
+# reverse engineering toolbelt
+for choice in $OPTDRI; do
+  case $choice in
+    renv)
+      aur rizin cutter-git
+      pushd ~/.local/build/rz_report && ./install.sh && popd
+      pushd ~/.local/build/triage && ./install.sh && popd
+      pacman_need ssdeep wireshark-qt xxd
+      pacman_need libewf libguestfs veracrypt fuse2 btrfs-progs dosfstools exfatprogs \
+                  f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
+                  xfsprogs squashfs-tools
+      pushd ~/.local/build/blackarch && ./install.sh && popd
+    ;;
+  esac
+done
+
+# and at last: some firewall stuff
+pacman_need ufw
+sudo ufw default deny
+sudo ufw limit SSH
+sudo ufw limit 3389/tcp
+sudo ufw logging off
+sudo ufw enable
+sudo systemctl enable ufw

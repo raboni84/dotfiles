@@ -1,0 +1,26 @@
+pkgname=firefox-adguard
+pkgver=3.5.31
+pkgrel=1
+pkgdesc="Unmatched adblock extension against advertising and pop-ups. Blocks ads on Facebook, Youtube and all other websites."
+arch=('i686' 'x86_64')
+url=https://adguard.com
+license=('LGPLv3')
+source=("https://addons.mozilla.org/firefox/downloads/file/3696663/adguard_adblocker-${pkgver}-an+fx.xpi")
+noextract=("${source##*/}")
+sha256sums=('6ddaf4da351a6aa29b062857295eb17d200e707ffba7fb88e7c2df4568442f92')
+
+prepare() {
+  mkdir tmp && cd tmp
+  bsdtar -xf "../${source##*/}"
+  sed -i 's/\[ "storage" \]/\[ "storage" \],\
+    "browser_specific_settings": {\
+      "gecko": {\
+        "id": "adguardadblocker@adguard.com"\
+      }\
+    }/' manifest.json
+  bsdtar -caf singlefile.zip *
+}
+
+package() {
+  install -Dm644 tmp/singlefile.zip "$pkgdir"/usr/lib/firefox/browser/extensions/adguardadblocker@adguard.com.xpi
+}

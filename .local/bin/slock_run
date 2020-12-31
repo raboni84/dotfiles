@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+[[ $(pacmd list-sink-inputs) =~ 'RUNNING' ]] && [[ $(pamixer --get-mute) =~ 'false' ]] || slock

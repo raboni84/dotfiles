@@ -1,0 +1,9 @@
+--- /etc/pacman.conf
++++ /etc/pacman.conf
+@@ -97,3 +97,6 @@
+ #[custom]
+ #SigLevel = Optional TrustAll
+ #Server = file:///home/custompkgs
++
++[blackarch]
++Include = /etc/pacman.d/blackarch-mirrorlist

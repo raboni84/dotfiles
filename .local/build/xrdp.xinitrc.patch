@@ -1,0 +1,10 @@
+--- /etc/xrdp/startwm.sh
++++ /etc/xrdp/startwm.sh
+@@ -5,6 +5,7 @@
+ #
+ # Uncomment the following line for debug:
+ # exec xterm
++exec /bin/bash --login -i ~/.xinitrc
+ 
+ 
+ # Execution sequence for interactive login shell - pseudocode

@@ -1,0 +1,37 @@
+pkgname=rz_report
+pkgver=r2.183bb81
+pkgrel=1
+pkgdesc="Rizin plugin to generate reports"
+arch=('i686' 'x86_64')
+license=('CCPL:cc-by-nc-sa-4.0')
+depends=('rizin')
+makedepends=('dotnet-sdk')
+provides=($pkgname)
+conflicts=($pkgname)
+source=("$pkgname::git://github.com/raboni84/rz_report.git"
+        "cc-by-nc-sa-4.0.txt")
+sha256sums=('SKIP'
+            'e66c269d4819aaab34b49ef5220c4ddab6756f21bb5180761a4eb8561f2b7bbd')
+
+pkgver(){
+  cd $pkgname
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd $pkgname
+  rm -rf bin/ obj/
+  dotnet build -c Release
+}
+
+package() {
+  cd $pkgname
+  install -d "$pkgdir/opt/$pkgname"
+  dotnet publish --no-build -c Release -o "$pkgdir/opt/$pkgname"
+  
+  install -d "$pkgdir/usr/bin"
+  ln -s "/opt/$pkgname/$pkgname" "$pkgdir/usr/bin/$pkgname"
+
+  install -D -m644 "$srcdir/cc-by-nc-sa-4.0.txt" \
+  "${pkgdir}/usr/share/licenses/${pkgname}/cc-by-nc-sa-4.0.txt"
+}

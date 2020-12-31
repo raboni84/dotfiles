@@ -1,0 +1,16 @@
+--- /etc/systemd/sleep.conf
++++ /etc/systemd/sleep.conf
+@@ -14,10 +14,10 @@
+ [Sleep]
+ #AllowSuspend=yes
+ #AllowHibernation=yes
+-#AllowSuspendThenHibernate=yes
++AllowSuspendThenHibernate=no
+ #AllowHybridSleep=yes
+-#SuspendMode=
+-#SuspendState=mem standby freeze
++SuspendMode=suspend platform shutdown
++SuspendState=disk
+ #HibernateMode=platform shutdown
+ #HibernateState=disk
+ #HybridSleepMode=suspend platform shutdown

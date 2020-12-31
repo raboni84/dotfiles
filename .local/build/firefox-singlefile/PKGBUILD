@@ -1,0 +1,26 @@
+pkgname=firefox-singlefile
+pkgver=1.18.66
+pkgrel=1
+pkgdesc="Save an entire web page—including images and styling—as a single HTML file."
+arch=('i686' 'x86_64')
+url=https://github.com/gildas-lormeau/SingleFile
+license=('AGPLv3')
+source=("https://addons.mozilla.org/firefox/downloads/file/3715227/singlefile-${pkgver}-an+fx.xpi")
+noextract=("${source##*/}")
+sha256sums=('7edaa0e21deb4a69b4eb5e6a810322a74fa76fcff991cfce24f03c293101bde9')
+
+prepare() {
+  mkdir tmp && cd tmp
+  bsdtar -xf "../${source##*/}"
+  sed -i 's/\[ "storage" \]/\[ "storage" \],\
+    "browser_specific_settings": {\
+      "gecko": {\
+        "id": "{531906d3-e22f-4a6c-a102-8057b88a1a63}"\
+      }\
+    }/' manifest.json
+  bsdtar -caf singlefile.zip *
+}
+
+package() {
+  install -Dm644 tmp/singlefile.zip "$pkgdir"/usr/lib/firefox/browser/extensions/{531906d3-e22f-4a6c-a102-8057b88a1a63}.xpi
+}
