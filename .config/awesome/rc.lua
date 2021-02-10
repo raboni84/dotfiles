@@ -85,7 +85,7 @@ editor_cmd = terminal .. " -e " .. editor
 modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
-awful.layout.layouts = {awful.layout.suit.tile, awful.layout.suit.floating}
+awful.layout.layouts = {awful.layout.suit.spiral.dwindle, awful.layout.suit.tile, awful.layout.suit.floating}
 
 -- global flag showing wiboxes and titlebars
 global_wibox_show = true
@@ -111,6 +111,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- {{{ Wibar
 -- Create all status widgets
+local kernel = require("kernel")
 local battery = require("battery")
 local wifi = require("wifi")
 local volume = require("volume")
@@ -242,7 +243,8 @@ awful.screen.connect_for_each_screen(function(s)
             mylauncher,
             s.mytaglist,
             s.mypromptbox,
-            wibox.widget.systray()
+            wibox.widget.systray(),
+            s.mylayoutbox
         },
         s.mytasklist, -- Middle widget
         { -- Right widgets
@@ -255,7 +257,8 @@ awful.screen.connect_for_each_screen(function(s)
             volume.getWidget(),
             weather.getWidget(),
             datetime.getWidget(),
-            s.mylayoutbox
+            kernel.getWidget(),
+            wibox.widget.textbox(" ")
         }
     }
 end)

@@ -24,11 +24,11 @@ else
 fi
 
 # prepare environment
-sudo pacman -Syy
-pacman_need git
+sudo pacman -Syu
+pacman_need git base-devel
 aur aic94xx-firmware wd719x-firmware
-pacman_need linux-lts linux-lts-headers linux-firmware nano base-devel dhcpcd sudo htop \
-            grub efibootmgr dosfstools os-prober mtools dialog bash-completion openssh lvm2
+pacman_need nano dhcpcd sudo htop grub efibootmgr dosfstools os-prober mtools dialog \
+            bash-completion openssh lvm2
 sudo systemctl enable systemd-networkd systemd-resolved dhcpcd systemd-timesyncd sshd
 sudo cp ~/.bash_profile ~/.bashrc /root/
 sudo chmod 600 /root/.bash_profile /root/.bashrc
@@ -118,7 +118,8 @@ else
            devenv "Devel Env" off
            hybrid "Hybrid sleep" off
            wine "Wine" off
-           renv "Reverse Engineering" off)
+           renv "Reverse Engineering" off
+           vbox "VirtualBox" off)
   OPTDRI=$(checklist_menu "Choose additional stuff:" "${OPTIONS[@]}")
   mkdir -p ~/.local/etc
   echo -en "SYSBASE=\"$SYSBASE\"\nOPTCPU=\"$OPTCPU\"\nOPTGPU=\"$OPTGPU\"\nOPTDRI=\"$OPTDRI\"\n" > ~/.local/etc/setup.conf
@@ -431,6 +432,15 @@ for choice in $OPTDRI; do
                   f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
                   xfsprogs squashfs-tools
       pushd ~/.local/build/blackarch && ./install.sh && popd
+    ;;
+  esac
+done
+
+# virtualbox
+for choice in $OPTDRI; do
+  case $choice in
+    vbox)
+      pacman_need virtualbox virtualbox-host-modules-arch
     ;;
   esac
 done

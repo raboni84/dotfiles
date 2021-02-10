@@ -194,8 +194,11 @@ pacman -Syy
 # choose all defaults here
 pacstrap -i /mnt base
 arch-chroot /mnt
-pacman -S linux-lts linux-lts-headers linux-firmware nano base-devel dhcpcd \
-          grub efibootmgr dosfstools os-prober mtools git sudo openssh lvm2
+# when installing in a virtual machine leave the linux and linux-headers out of it, because the
+# virtualbox-guest-dkms module needs to be replaced in future kernels with virtualbox-guest-modules-arch
+pacman -S (linux linux-headers) linux-lts linux-lts-headers linux-firmware nano base-devel \
+          dhcpcd sudo htop grub efibootmgr dosfstools os-prober mtools dialog \
+          bash-completion openssh lvm2
 systemctl enable systemd-networkd systemd-resolved dhcpcd
 # for wifi cards install/configure these too
   pacman -S iwd iw
@@ -235,6 +238,7 @@ lsblk -o NAME,UUID
 nano /etc/default/grub
 # -> edit/uncomment the following lines
   GRUB_DEFAULT="saved"
+  GRUB_DISABLE_SUBMENU=y
   # - acpi_osi tells the BIOS that it is not Windows that asks for power events.
   #   This prevents missing or wrong interpreted power events. In my case when plugging in/out the ac power cable resulted in random keyboard
   #   characters "^@^@^@" and killing of dwm or bash scripts.

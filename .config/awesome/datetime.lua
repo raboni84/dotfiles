@@ -6,7 +6,7 @@ local module = {}
 
 module.icon = wibox.widget.textbox()
 module.icon:set_markup("  ")
-module.widget = wibox.widget.textclock("KW %V %a %d %b %H:%M %Z %Y ")
+module.widget = wibox.widget.textclock("KW %V %a %d %b %H:%M %Z %Y")
 module.datetimewidget = wibox.widget {
     module.icon,
     module.widget,
