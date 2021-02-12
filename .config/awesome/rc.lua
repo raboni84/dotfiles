@@ -89,6 +89,9 @@ awful.layout.layouts = {awful.layout.suit.spiral.dwindle, awful.layout.suit.tile
 
 -- global flag showing wiboxes and titlebars
 global_wibox_show = true
+
+-- global flag for sloppy mouse focus
+enableSloppy = false
 -- }}}
 
 -- {{{ Menu
@@ -271,6 +274,19 @@ root.buttons(gears.table.join(awful.button({}, 4, awful.tag.viewnext), awful.but
 -- {{{ Key bindings
 awesome_grp = gears.table.join(awful.key({modkey}, "s", hotkeys_popup.show_help, {
     description = "show help",
+    group = "awesome"
+}), awful.key({modkey, "Shift"}, "s", function()
+    enableSloppy = not enableSloppy
+    local msg = "enabled"
+    if not enableSloppy then
+        msg = "disabled"
+    end
+    naughty.notify({
+        title = "sloppy mouse focus",
+        text = msg
+    })
+end, {
+    description = "toggle sloppy mouse focus",
     group = "awesome"
 }), awful.key({modkey, "Control"}, "r", awesome.restart, {
     description = "reload awesome",
@@ -716,9 +732,11 @@ end)
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
     mymainmenu:hide()
-    c:emit_signal("request::activate", "mouse_enter", {
-        raise = false
-    })
+    if enableSloppy then
+        c:emit_signal("request::activate", "mouse_enter", {
+            raise = false
+        })
+    end
 end)
 
 client.connect_signal("focus", function(c)
