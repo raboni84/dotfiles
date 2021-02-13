@@ -60,6 +60,7 @@ module.weatherwidget:buttons(gears.table.join(awful.button({}, 1, function(t)
                     naughty.notify({
                         title = "Weather forecast",
                         text = stdout,
+                        font = "DejaVu Sans Mono 9",
                         timeout = 0
                     })
                 end)
