@@ -1,5 +1,5 @@
 pkgname=rz_report
-pkgver=r2.183bb81
+pkgver=r3.8799c7b
 pkgrel=1
 pkgdesc="Rizin plugin to generate reports"
 arch=('i686' 'x86_64')
