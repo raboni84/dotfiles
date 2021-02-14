@@ -104,6 +104,10 @@ mymainmenu = awful.menu({
              {"poweroff", "systemctl poweroff", "/usr/share/icons/Papirus/22x22/status/state_shutoff.svg"}}
 })
 
+local function hideMainMenu()
+    mymainmenu:hide()
+end
+
 mylauncher = awful.widget.launcher({
     image = beautiful.awesome_icon,
     menu = mymainmenu
@@ -268,7 +272,9 @@ end)
 -- }}}
 
 -- {{{ Mouse bindings
-root.buttons(gears.table.join(awful.button({}, 4, awful.tag.viewnext), awful.button({}, 5, awful.tag.viewprev)))
+root.buttons(gears.table.join(awful.button({}, 1, hideMainMenu), awful.button({}, 2, hideMainMenu),
+                 awful.button({}, 3, hideMainMenu), awful.button({}, 4, awful.tag.viewnext),
+                 awful.button({}, 5, awful.tag.viewprev)))
 -- }}}
 
 -- {{{ Key bindings
@@ -731,7 +737,7 @@ end)
 
 -- Enable sloppy focus, so that focus follows mouse.
 client.connect_signal("mouse::enter", function(c)
-    mymainmenu:hide()
+    hideMainMenu()
     if enableSloppy then
         c:emit_signal("request::activate", "mouse_enter", {
             raise = false
