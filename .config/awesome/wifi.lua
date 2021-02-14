@@ -46,8 +46,7 @@ module.wifiwidget:buttons(gears.table.join(awful.button({}, 1, function(t)
                 awful.spawn.easy_async_with_shell("iwctl station " .. module.wificard .. " get-networks",
                     function(stdout, stderr, reason, exit_code)
                         naughty.notify({
-                            title = "SSIDs",
-                            text = stdout:gsub(string.char(0x1b) .. "%[[%d;]+m", ""):gsub("\n\n", "\n"),
+                            text = stdout:gsub(string.char(0x1b) .. "%[[%d;]+m", ""):gsub("\n\n", "\n"):sub(1, -2),
                             timeout = 0
                         })
                     end)

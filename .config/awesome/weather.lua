@@ -58,8 +58,7 @@ module.weatherwidget:buttons(gears.table.join(awful.button({}, 1, function(t)
             local url = "curl -H \"Accept-Language: ${LANG%_*}\" --compressed wttr.in/" .. region .. "?2FT"
             awful.spawn.easy_async_with_shell(url, function(stdout, stderr, reason, exit_code)
                     naughty.notify({
-                        title = "Weather forecast",
-                        text = stdout,
+                        text = stdout:sub(1, -2),
                         font = "DejaVu Sans Mono 9",
                         timeout = 0
                     })
