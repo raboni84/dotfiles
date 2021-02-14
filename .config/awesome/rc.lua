@@ -313,10 +313,19 @@ end, {
     for _, cl in ipairs(client.get()) do
         local c = cl
         if c then
+            local wasFullscreen = c.maximized and c:isvisible()
+            if wasFullscreen then
+                c.maximized = false
+                c:raise()
+            end
             if global_wibox_show then
                 awful.titlebar.show(c)
             else
                 awful.titlebar.hide(c)
+            end
+            if wasFullscreen then
+                c.maximized = true
+                c:raise()
             end
         end
     end
