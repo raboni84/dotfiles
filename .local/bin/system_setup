@@ -432,6 +432,8 @@ for choice in $OPTDRI; do
                   f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
                   xfsprogs squashfs-tools
       pushd ~/.local/build/blackarch && ./install.sh && popd
+      mkdir -p ~/posters
+      pushd ~/posters && wget -A pdf --random-wait -r -l 1 -nd -N -e robots=off https://digital-forensics.sans.org/community/posters && popd
     ;;
   esac
 done
@@ -440,7 +442,7 @@ done
 for choice in $OPTDRI; do
   case $choice in
     vbox)
-      pacman_need virtualbox virtualbox-host-modules-arch
+      pacman_need virtualbox virtualbox-host-dkms
     ;;
   esac
 done

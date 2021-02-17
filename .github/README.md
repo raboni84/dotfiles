@@ -196,7 +196,7 @@ pacstrap -i /mnt base
 arch-chroot /mnt
 # when installing in a virtual machine leave the linux and linux-headers out of it, because the
 # virtualbox-guest-dkms module needs to be replaced in future kernels with virtualbox-guest-modules-arch
-pacman -S (linux linux-headers) linux-lts linux-lts-headers linux-firmware nano base-devel \
+pacman -S linux-lts linux-lts-headers linux-firmware nano base-devel \
           dhcpcd sudo htop grub efibootmgr dosfstools os-prober mtools dialog \
           bash-completion openssh lvm2
 systemctl enable systemd-networkd systemd-resolved dhcpcd
