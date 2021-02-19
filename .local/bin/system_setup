@@ -427,6 +427,7 @@ for choice in $OPTDRI; do
       aur rizin cutter-git
       pushd ~/.local/build/rz_report && ./install.sh && popd
       pushd ~/.local/build/triage && ./install.sh && popd
+      pushd ~/.local/build/regdrop && ./install.sh && popd
       pacman_need ssdeep wireshark-qt xxd
       pacman_need libewf libguestfs veracrypt fuse2 btrfs-progs dosfstools exfatprogs \
                   f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
