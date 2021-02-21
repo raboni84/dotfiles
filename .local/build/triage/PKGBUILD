@@ -1,5 +1,5 @@
 pkgname=triage
-pkgver=r2.fd4622d
+pkgver=r3.e56bc8f
 pkgrel=1
 pkgdesc="Triage tool for offline aquisition of windows and linux images"
 arch=('i686' 'x86_64')
