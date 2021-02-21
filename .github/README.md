@@ -68,7 +68,7 @@ fdisk /dev/[drive]
   enter # (partition 2)
   4 # (type 4: BIOS boot)
 
-# if you want a full disk encryption, use the following setup
+# if you want a root/swap/home partition encryption, use the following setup
   n # -> boot partition
   enter
   enter
@@ -236,7 +236,6 @@ lsblk -o NAME,UUID
 nano /etc/default/grub
 # -> edit/uncomment the following lines
   GRUB_DEFAULT="saved"
-  GRUB_DISABLE_SUBMENU=y
   # - acpi_osi tells the BIOS that it is not Windows that asks for power events.
   #   This prevents missing or wrong interpreted power events. In my case when plugging in/out the ac power cable resulted in random keyboard
   #   characters "^@^@^@" and killing of dwm or bash scripts.
