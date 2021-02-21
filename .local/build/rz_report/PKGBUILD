@@ -1,5 +1,5 @@
 pkgname=rz_report
-pkgver=r3.8799c7b
+pkgver=r5.7fea6a5
 pkgrel=1
 pkgdesc="Rizin plugin to generate reports"
 arch=('i686' 'x86_64')
@@ -16,6 +16,11 @@ sha256sums=('SKIP'
 pkgver(){
   cd $pkgname
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd $pkgname
+    git submodule update --init
 }
 
 build() {
