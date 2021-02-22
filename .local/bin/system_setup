@@ -340,6 +340,7 @@ done
 pacman_need gitg firefox xkcdpass pv
 pushd ~/.local/build/firefox-adguard && ./install.sh && popd
 pushd ~/.local/build/firefox-singlefile && ./install.sh && popd
+pushd ~/.local/build/firefox-forgetmenot && ./install.sh && popd
 case "$SYSBASE" in
   srv) ;;
   *)

@@ -1,0 +1,26 @@
+pkgname=firefox-forgetmenot
+pkgver=2.2.8
+pkgrel=1
+pkgdesc="Make the browser forget website data (like cookies, local storage, etc.), except for the data you want to keep by adding domains to a whitelist, graylist, blacklist, or redlist."
+arch=('i686' 'x86_64')
+url=https://github.com/Lusito/forget-me-not/
+license=('zlib')
+source=("https://addons.mozilla.org/firefox/downloads/file/3577046/forget_me_not_forget_cookies_other_data-${pkgver}-an+fx.xpi")
+noextract=("${source##*/}")
+sha256sums=('0784456f4f992c143b7897ea7879ce6324d9cce295c29a848e7ed55d9c762be3')
+
+prepare() {
+  mkdir tmp && cd tmp
+  bsdtar -xf "../${source##*/}"
+  sed -i 's/\[ "storage" \]/\[ "storage" \],\
+    "browser_specific_settings": {\
+      "gecko": {\
+        "id": "forget-me-not@lusito.info"\
+      }\
+    }/' manifest.json
+  bsdtar -caf addon.zip *
+}
+
+package() {
+  install -Dm644 tmp/addon.zip "$pkgdir"/usr/lib/firefox/browser/extensions/forget-me-not@lusito.info.xpi
+}
