@@ -1,5 +1,5 @@
 pkgname=regdrop
-pkgver=r1.2085578
+pkgver=r2.32e2c7d
 pkgrel=1
 pkgdesc="Dumping registry hives to common formats"
 arch=('i686' 'x86_64')
