@@ -7,10 +7,8 @@ license=('CCPL:cc-by-nc-sa-4.0')
 makedepends=('dotnet-sdk')
 provides=($pkgname)
 conflicts=($pkgname)
-source=("$pkgname::git://github.com/raboni84/regdrop.git"
-        "cc-by-nc-sa-4.0.txt")
-sha256sums=('SKIP'
-            'e66c269d4819aaab34b49ef5220c4ddab6756f21bb5180761a4eb8561f2b7bbd')
+source=("$pkgname::git://github.com/raboni84/regdrop.git")
+sha256sums=('SKIP')
 
 pkgver(){
   cd $pkgname
@@ -36,6 +34,6 @@ package() {
   install -d "$pkgdir/usr/bin"
   ln -s "/opt/$pkgname/$pkgname" "$pkgdir/usr/bin/$pkgname"
 
-  install -D -m644 "$srcdir/cc-by-nc-sa-4.0.txt" \
+  install -D -m644 "LICENSE" \
   "${pkgdir}/usr/share/licenses/${pkgname}/cc-by-nc-sa-4.0.txt"
 }
