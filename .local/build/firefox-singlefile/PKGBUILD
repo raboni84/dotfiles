@@ -18,9 +18,9 @@ prepare() {
         "id": "{531906d3-e22f-4a6c-a102-8057b88a1a63}"\
       }\
     }/' manifest.json
-  bsdtar -caf singlefile.zip *
+  bsdtar -caf addon.zip *
 }
 
 package() {
-  install -Dm644 tmp/singlefile.zip "$pkgdir"/usr/lib/firefox/browser/extensions/{531906d3-e22f-4a6c-a102-8057b88a1a63}.xpi
+  install -Dm644 tmp/addon.zip "$pkgdir"/usr/lib/firefox/browser/extensions/{531906d3-e22f-4a6c-a102-8057b88a1a63}.xpi
 }

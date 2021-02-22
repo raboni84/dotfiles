@@ -18,9 +18,9 @@ prepare() {
         "id": "adguardadblocker@adguard.com"\
       }\
     }/' manifest.json
-  bsdtar -caf singlefile.zip *
+  bsdtar -caf addon.zip *
 }
 
 package() {
-  install -Dm644 tmp/singlefile.zip "$pkgdir"/usr/lib/firefox/browser/extensions/adguardadblocker@adguard.com.xpi
+  install -Dm644 tmp/addon.zip "$pkgdir"/usr/lib/firefox/browser/extensions/adguardadblocker@adguard.com.xpi
 }
