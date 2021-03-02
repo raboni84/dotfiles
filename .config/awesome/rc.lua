@@ -66,7 +66,7 @@ beautiful.menu_height = dpi(22)
 beautiful.menu_width = dpi(150)
 beautiful.icon_theme = "Papirus"
 local p = io.popen(
-              'find /usr/share/backgrounds -type f \\( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \\) | shuf -n 1')
+              'find /usr/share/backgrounds /usr/share/wallpapers -type f \\( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \\) | shuf -n 1')
 if p then
     beautiful.wallpaper = p:read()
     p:close()

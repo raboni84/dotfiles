@@ -185,7 +185,7 @@ esac
 # window manager
 pacman_need xorg-server xorg-xinit xorg-xrandr xautolock slock rofi awesome archlinux-xdg-menu \
             libinput xf86-input-libinput xorg-xinput \
-            archlinux-wallpaper papirus-icon-theme flameshot \
+            archlinux-wallpaper elementary-wallpapers papirus-icon-theme flameshot \
             ttf-dejavu ttf-liberation ttf-font-awesome ttf-hanazono ttf-hannom ttf-baekmuk
 aur otf-openmoji
 pushd ~/.local/build/st && ./install.sh && popd
