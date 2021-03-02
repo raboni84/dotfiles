@@ -32,6 +32,14 @@ pacman_need nano dhcpcd sudo htop grub efibootmgr dosfstools os-prober mtools di
 sudo systemctl enable systemd-networkd systemd-resolved dhcpcd systemd-timesyncd sshd
 sudo cp ~/.bash_profile ~/.bashrc /root/
 sudo chmod 600 /root/.bash_profile /root/.bashrc
+if [[ ! -f ~/.ssh/id_ed25519.pub ]]; then
+  echo "Generating a ssh key for user '$USER'."
+  mkdir -p ~/.ssh
+  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
+  eval "$(ssh-agent -s)"
+  ssh-add ~/.ssh/id_ed25519
+  eval "$(ssh-agent -k)"
+fi
 
 # prepare dotfiles repository
 pushd ~/.dotfiles
