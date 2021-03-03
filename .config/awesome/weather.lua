@@ -17,7 +17,7 @@ module.weatherwidget = wibox.widget {
 
 local fd = io.open(gears.filesystem.get_xdg_config_home() .. "weather.loc", "r")
 if fd ~= nil then
-    module.location = fd:read():gsub("[\":/.]","")
+    module.location = fd:read():gsub("[\":/.\n]","")
     fd:close()
 end
 
