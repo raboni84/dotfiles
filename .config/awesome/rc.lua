@@ -58,7 +58,7 @@ end
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 beautiful.font = "DejaVu Sans 10"
-beautiful.useless_gap = dpi(5)
+beautiful.useless_gap = dpi(2)
 beautiful.hotkeys_font = "DejaVu Sans Mono 8"
 beautiful.hotkeys_modifiers_fg = beautiful.border_color_active
 beautiful.notification_font = "DejaVu Sans Mono 10"
@@ -202,6 +202,20 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+local function titlebarBasedOnLayout()
+    for _, cl in ipairs(client.get()) do
+        local c = cl
+        if c and c:isvisible() then
+            local layout = awful.layout.getname()
+            if layout == "floating" then
+                awful.titlebar.show(c)
+            else
+                awful.titlebar.hide(c)
+            end
+        end
+    end
+end
+
 awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
@@ -215,12 +229,16 @@ awful.screen.connect_for_each_screen(function(s)
     s.mylayoutbox = awful.widget.layoutbox(s)
     s.mylayoutbox:buttons(gears.table.join(awful.button({}, 1, function()
         awful.layout.inc(1)
+        titlebarBasedOnLayout()
     end), awful.button({}, 3, function()
         awful.layout.inc(-1)
+        titlebarBasedOnLayout()
     end), awful.button({}, 4, function()
         awful.layout.inc(1)
+        titlebarBasedOnLayout()
     end), awful.button({}, 5, function()
         awful.layout.inc(-1)
+        titlebarBasedOnLayout()
     end)))
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
@@ -305,30 +323,31 @@ end, {
     for s in screen do
         s.mywibox.visible = global_wibox_show
         if global_wibox_show then
-            beautiful.useless_gap = 4
+            beautiful.useless_gap = dpi(2)
         else
-            beautiful.useless_gap = 0
+            beautiful.useless_gap = dpi(0)
         end
     end
-    for _, cl in ipairs(client.get()) do
-        local c = cl
-        if c then
-            local wasFullscreen = c.maximized and c:isvisible()
-            if wasFullscreen then
-                c.maximized = false
-                c:raise()
-            end
-            if global_wibox_show then
-                awful.titlebar.show(c)
-            else
-                awful.titlebar.hide(c)
-            end
-            if wasFullscreen then
-                c.maximized = true
-                c:raise()
-            end
-        end
-    end
+    titlebarBasedOnLayout()
+    -- for _, cl in ipairs(client.get()) do
+    --    local c = cl
+    --    if c then
+    --        local wasFullscreen = c.maximized and c:isvisible()
+    --        if wasFullscreen then
+    --            c.maximized = false
+    --            c:raise()
+    --        end
+    --        if global_wibox_show then
+    --            awful.titlebar.show(c)
+    --        else
+    --            awful.titlebar.hide(c)
+    --        end
+    --        if wasFullscreen then
+    --            c.maximized = true
+    --            c:raise()
+    --        end
+    --    end
+    -- end
 end, {
     description = "toggle statusbar",
     group = "awesome"
@@ -707,9 +726,16 @@ client.connect_signal("manage", function(c)
         awful.placement.no_offscreen(c)
     end
 
-    if not global_wibox_show then
+    local layout = awful.layout.getname()
+    if layout == "floating" then
+        awful.titlebar.show(c)
+    else
         awful.titlebar.hide(c)
     end
+
+    -- if not global_wibox_show then
+    --     awful.titlebar.hide(c)
+    -- end
 end)
 
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
