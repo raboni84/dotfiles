@@ -401,6 +401,7 @@ for choice in $OPTDRI; do
       code --install-extension dotjoshjohnson.xml --force
       code --install-extension aaron-bond.better-comments --force
       dotnet tool install --global PowerShell --version 6.2.7 || true
+      pushd ~/.local/build/squashrepo && ./install.sh && popd
     ;;
   esac
 done

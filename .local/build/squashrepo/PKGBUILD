@@ -1,0 +1,25 @@
+pkgname=squashrepo
+pkgver=r1.676c5e9
+pkgrel=1
+pkgdesc="Squash a local repository and force push it to somewhere else"
+arch=('i686' 'x86_64')
+license=('CCPL:cc-by-nc-sa-4.0')
+depends=('bash')
+provides=($pkgname)
+conflicts=($pkgname)
+source=("$pkgname::git://github.com/raboni84/squashrepo.git")
+sha256sums=('SKIP')
+
+pkgver(){
+  cd $pkgname
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd $pkgname
+  install -d "$pkgdir/usr/bin"
+  install -D -m755 "$srcdir/squashrepo/squashrepo" "${pkgdir}/usr/bin/squashrepo"
+
+  install -D -m644 "LICENSE" \
+  "${pkgdir}/usr/share/licenses/${pkgname}/cc-by-nc-sa-4.0.txt"
+}
