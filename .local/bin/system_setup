@@ -13,6 +13,9 @@ set +x
 function pacman_need() {
   sudo pacman -S --needed --noconfirm --color=auto $@
 }
+function pacman_force_remove_dependency() {
+  sudo pacman -Rd --nodeps --noconfirm --color=auto $@
+}
 
 # initialize user
 USER="$(id -un)"
@@ -400,6 +403,13 @@ for choice in $OPTDRI; do
       code --install-extension yinfei.luahelper --force
       code --install-extension dotjoshjohnson.xml --force
       code --install-extension aaron-bond.better-comments --force
+      for subchoice in $OPTDRI; do
+        case $subchoice in
+          renv)
+            code --install-extension infosec-intern.yara --force
+          ;;
+        esac
+      done
       dotnet tool install --global PowerShell --version 6.2.7 || true
       pushd ~/.local/build/squashrepo && ./install.sh && popd
     ;;
@@ -450,6 +460,8 @@ for choice in $OPTDRI; do
       pacman_need libewf libguestfs veracrypt fuse2 btrfs-progs dosfstools exfatprogs \
                   f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
                   xfsprogs squashfs-tools
+      # libguestfs <- vim <- gvim ?! NO!
+      pacman_force_remove_dependency gvim
       pushd ~/.local/build/blackarch && ./install.sh && popd
       mkdir -p ~/posters
       pushd ~/posters && wget -A pdf --random-wait -r -l 1 -nd -N -e robots=off --no-if-modified-since https://digital-forensics.sans.org/community/posters && popd
