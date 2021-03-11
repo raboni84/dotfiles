@@ -1,5 +1,5 @@
 pkgname=rz_report
-pkgver=r7.ee8b9b6
+pkgver=r13.90f514b
 pkgrel=1
 pkgdesc="Rizin addon to generate reports"
 arch=('i686' 'x86_64')
@@ -32,6 +32,9 @@ package() {
   install -d "$pkgdir/opt/$pkgname"
   dotnet publish --no-build -c Release -o "$pkgdir/opt/$pkgname"
   
+  install -d "$pkgdir/opt/$pkgname/rules"
+  cp -vR rules/* "$pkgdir/opt/$pkgname/rules/"
+
   install -d "$pkgdir/usr/bin"
   ln -s "/opt/$pkgname/$pkgname" "$pkgdir/usr/bin/$pkgname"
 
