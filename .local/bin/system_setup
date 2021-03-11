@@ -459,7 +459,7 @@ for choice in $OPTDRI; do
       pacman_need ssdeep wireshark-qt xxd
       pacman_need libewf libguestfs veracrypt fuse2 btrfs-progs dosfstools exfatprogs \
                   f2fs-tools e2fsprogs jfsutils nilfs-utils ntfs-3g reiserfsprogs udftools \
-                  xfsprogs squashfs-tools
+                  xfsprogs squashfs-tools yara
       # libguestfs <- vim <- gvim ?! NO!
       pacman_force_remove_dependency gvim
       pushd ~/.local/build/blackarch && ./install.sh && popd
